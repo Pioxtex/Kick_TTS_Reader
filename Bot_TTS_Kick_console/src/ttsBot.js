@@ -1,4 +1,4 @@
-// TTS Bot – pełna wersja z local settings.json, logami i auto reloadem
+// TTS Bot – settings.json obok pliku, voice select, pamietanie ustawien, filtry PL + boty, usuwanie polskich znakow
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -19,9 +19,9 @@ function ensureSettingsFile() {
     if (!fs.existsSync(CONFIG_PATH)) {
       const defaults = {
         maxLen: 220,
-        rate: 0.75,
+        rate: 0.8,
         volume: 100,
-        chunking: true,
+        chunking: false,
         readCommands: false,
         profanity: true,
         skipBots: true,
@@ -70,6 +70,15 @@ function mapRateToSapi(rate) {
   return Math.round((clamped - 1.0) * 5);
 }
 
+// ⬇️ nowa funkcja: PL diacritics -> ASCII
+function removePolishChars(text) {
+  const map = {
+    'ą':'a','ć':'c','ę':'e','ł':'l','ń':'n','ó':'o','ś':'s','ź':'z','ż':'z',
+    'Ą':'A','Ć':'C','Ę':'E','Ł':'L','Ń':'N','Ó':'O','Ś':'S','Ź':'Z','Ż':'Z'
+  };
+  return text.replace(/[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/g, ch => map[ch] || ch);
+}
+
 function prepForTTS(text, maxLen, profanityFilter, filter) {
   let t = (text || '')
     .replace(/https?:\/\/\S+/gi, ' link ')
@@ -78,6 +87,9 @@ function prepForTTS(text, maxLen, profanityFilter, filter) {
     .replace(/\s+/g, ' ')
     .trim()
     .slice(0, maxLen);
+
+  // ⬇️ konwersja PL -> ASCII, zanim pojda filtry / TTS
+  t = removePolishChars(t);
 
   if (profanityFilter) {
     for (const rx of POLISH_FUZZY_RX) {
@@ -128,17 +140,17 @@ export class TTSBot {
     this.paused = false;
     this.currentPS = null;
 
-    // — log ścieżki i odczyt
-    // this.onLog('[config] path: ' + CONFIG_PATH);
+    // log sciezki i odczyt
+    this.onLog('[config] path: ' + CONFIG_PATH);
     const saved = loadConfig();
-    // this.onLog('[config] loaded@ctor: ' + JSON.stringify(saved));
+    this.onLog('[config] loaded@ctor: ' + JSON.stringify(saved));
 
-    // — merge default + plik
+    // merge default + plik
     this.opts = {
       maxLen: 220,
-      rate: 0.75,
+      rate: 0.8,
       volume: 100,
-      chunking: true,
+      chunking: false,
       maxQueue: 60,
       readCommands: false,
       profanity: true,
@@ -149,9 +161,9 @@ export class TTSBot {
       ...saved
     };
 
-    // this.onLog('[config] effective@ctor: ' + JSON.stringify(this.opts));
+    this.onLog('[config] effective@ctor: ' + JSON.stringify(this.opts));
 
-    // — filter i boty
+    // filter i boty
     this.filter = new Filter({ placeHolder: '*' });
     try { this.filter.addWords(...POLISH_BAD_BASE); } catch {}
     this.ignoredBots = ['streamlabs','nightbot','moobot','streamelements','fossabot','cloudbot'];
@@ -159,21 +171,21 @@ export class TTSBot {
   }
 
   async start(channel, options = {}) {
-    // — ponownie wczytaj z dysku
+    // ponownie wczytaj z dysku
     const disk = loadConfig();
-    // this.onLog('[config] loaded@start: ' + JSON.stringify(disk));
+    this.onLog('[config] loaded@start: ' + JSON.stringify(disk));
 
     this.opts = { ...this.opts, ...disk, ...options };
-    // this.onLog('[config] effective@start: ' + JSON.stringify(this.opts));
+    this.onLog('[config] effective@start: ' + JSON.stringify(this.opts));
 
-    // — watcher zmian settings.json
+    // watcher zmian settings.json
     try { this._cfgWatcher?.close?.(); } catch {}
     try {
       this._cfgWatcher = fs.watch(CONFIG_PATH, { persistent: false }, () => {
         try {
           const fresh = loadConfig();
           this.opts = { ...this.opts, ...fresh };
-          // this.onLog('[config] reloaded@watch: ' + JSON.stringify(fresh));
+          this.onLog('[config] reloaded@watch: ' + JSON.stringify(fresh));
         } catch {}
       });
     } catch {}
@@ -241,10 +253,10 @@ export class TTSBot {
     if (this.currentPS) {
       try { this.currentPS.kill(); } catch {}
       this.currentPS = null;
-      this.onLog('[skip] Pominięto bieżącą wiadomość');
+      this.onLog('[skip] Pominieto biezaca wiadomosc');
       return true;
     } else {
-      this.onLog('[skip] Brak aktywnej wiadomości');
+      this.onLog('[skip] Brak aktywnej wiadomosci');
       return false;
     }
   }
@@ -266,7 +278,7 @@ export class TTSBot {
   }
 
   _speakOne(text) {
-    const rate = Math.max(0.5, Math.min(2.0, Number(this.opts.rate) || 0.75));
+    const rate = Math.max(0.5, Math.min(2.0, Number(this.opts.rate) || 0.9));
     const vol  = Math.max(0, Math.min(100, Number(this.opts.volume) || 100));
     const pieces = this.opts.chunking ? chunk(text) : [text];
     this.onLog('[TTS] ' + text);
@@ -299,16 +311,16 @@ export class TTSBot {
     });
   }
 
-  // ─────────────── Głosy & opcje ───────────────
+  // glosy & opcje
   setVoice(name) {
     this.opts.voiceName = String(name || '');
     if (this.opts.rememberSettings) saveConfig(this.opts);
-    this.onLog('[voice] Ustawiono głos: ' + (this.opts.voiceName || '(domyślny)'));
+    this.onLog('[voice] Ustawiono glos: ' + (this.opts.voiceName || '(domyslny)'));
   }
 
   async listVoices() {
     if (!isWin) {
-      this.onLog('[voice] Lista głosów zależy od systemu (say).');
+      this.onLog('[voice] Lista glosow zalezy od systemu (say).');
       return [];
     }
     return new Promise((resolve) => {
@@ -322,7 +334,7 @@ export class TTSBot {
         out.push(...b.toString('utf8').split(/\r?\n/).map(s => s.trim()).filter(Boolean));
       });
       ps.on('close', () => {
-        this.onLog('[voice] Głosy: ' + (out.join(', ') || '(brak)'));
+        this.onLog('[voice] Glosy: ' + (out.join(', ') || '(brak)'));
         resolve(out);
       });
     });
