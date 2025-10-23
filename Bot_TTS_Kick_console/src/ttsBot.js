@@ -19,9 +19,9 @@ function ensureSettingsFile() {
     if (!fs.existsSync(CONFIG_PATH)) {
       const defaults = {
         maxLen: 220,
-        rate: 0.8,
+        rate: 0.75,
         volume: 100,
-        chunking: false,
+        chunking: true,
         readCommands: false,
         profanity: true,
         skipBots: true,
@@ -66,7 +66,7 @@ const POLISH_FUZZY_RX = POLISH_BAD_BASE.map(w => new RegExp(w.split('').join('\\
 
 // ─────────────── HELPERS ───────────────
 function mapRateToSapi(rate) {
-  const clamped = Math.max(0.5, Math.min(2.0, Number(rate) || 0.9));
+  const clamped = Math.max(0.5, Math.min(2.0, Number(rate) || 0.75));
   return Math.round((clamped - 1.0) * 5);
 }
 
@@ -148,9 +148,9 @@ export class TTSBot {
     // merge default + plik
     this.opts = {
       maxLen: 220,
-      rate: 0.8,
+      rate: 0.75,
       volume: 100,
-      chunking: false,
+      chunking: true,
       maxQueue: 60,
       readCommands: false,
       profanity: true,
@@ -278,7 +278,7 @@ export class TTSBot {
   }
 
   _speakOne(text) {
-    const rate = Math.max(0.5, Math.min(2.0, Number(this.opts.rate) || 0.9));
+    const rate = Math.max(0.5, Math.min(2.0, Number(this.opts.rate) || 0.75));
     const vol  = Math.max(0, Math.min(100, Number(this.opts.volume) || 100));
     const pieces = this.opts.chunking ? chunk(text) : [text];
     this.onLog('[TTS] ' + text);
