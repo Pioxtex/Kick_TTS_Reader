@@ -1,0 +1,12 @@
+appId: com.pioxtex.kicktts
+productName: Kick TTS Reader
+directories:
+  output: dist
+files:
+  - "src/**"
+  - "package.json"
+  - "!dist/**"
+win:
+  target:
+    - portable
+  artifactName: "${productName}-Win-${version}-${arch}.${ext}"

@@ -1,0 +1,13 @@
+{
+  "maxLen": 220,
+  "rate": 0.75,
+  "volume": 100,
+  "chunking": true,
+  "maxQueue": 60,
+  "readCommands": false,
+  "profanity": true,
+  "skipBots": true,
+  "prefix": "{user} ",
+  "voiceName": "",
+  "rememberSettings": true
+}
