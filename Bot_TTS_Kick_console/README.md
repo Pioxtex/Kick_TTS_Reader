@@ -1,4 +1,4 @@
-# Kick TTS Reader (Windows) - @retconned/kick-js wersja
+# Kick TTS Reader (Windows)
 Dziala na publicznym czacie Kick bez tokenow. Uzytkownik wpisuje tylko nazwe kanalu.
 
 ## Start (dev)
@@ -8,9 +8,13 @@ npm run start
 ```
 Wpisz nazwe kanalu -> **Start**.
 
-## Build do jednego .EXE
+## Build do jednego .EXE (Administrator)
 ```bash
 npm run build:win
+
+lub
+
+npm run build:portable
 ```
 Artefakty w `dist/` (portable EXE + NSIS).
 
@@ -19,5 +23,3 @@ Domyslnie „Dzwiek systemu" -> dodaj **Desktop Audio**. Dla osobnego suwaka uzy
 
 ## Uwaga
 Jesli npm narzeka na wersje paczki, zaktualizuj wpis w `package.json` do najnowszej dostepnej: `"@retconned/kick-js": "*"`, a potem `npm install`.
-
-npm run build:portable
