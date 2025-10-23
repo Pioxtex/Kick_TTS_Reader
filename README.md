@@ -30,7 +30,7 @@ Działa w środowisku **Electron**, posiada kolejkę FIFO, możliwość wyciszan
 ## ⚡ Instalacja
 
 ```bash
-git clone https://github.com/Pioxtex/Kick-TTS-Reader.git
+git clone https://github.com/Pioxtex/Kick_TTS_Reader.git
 cd Kick-TTS-Reader\Bot_TTS_Kick_console
 npm install
 npm run start
