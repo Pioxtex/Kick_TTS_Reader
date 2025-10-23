@@ -30,10 +30,10 @@ function ensureSettingsFile() {
         rememberSettings: true
       };
       fs.writeFileSync(CONFIG_PATH, JSON.stringify(defaults, null, 2), 'utf8');
-      console.log('[config] created defaults:', CONFIG_PATH);
+      // console.log('[config] created defaults:', CONFIG_PATH);
     }
   } catch (e) {
-    console.error('[config] create failed:', e.message || e);
+    // console.error('[config] create failed:', e.message || e);
   }
 }
 
@@ -43,7 +43,7 @@ function loadConfig() {
     const s = fs.readFileSync(CONFIG_PATH, 'utf8');
     return JSON.parse(s);
   } catch (e) {
-    console.error('[config] load failed:', e.message || e);
+    // console.error('[config] load failed:', e.message || e);
     return {};
   }
 }
@@ -51,9 +51,9 @@ function loadConfig() {
 function saveConfig(cfg) {
   try {
     fs.writeFileSync(CONFIG_PATH, JSON.stringify(cfg, null, 2), 'utf8');
-    console.log('[config] saved:', CONFIG_PATH);
+    // console.log('[config] saved:', CONFIG_PATH);
   } catch (e) {
-    console.error('[config] save failed:', e.message || e);
+    // console.error('[config] save failed:', e.message || e);
   }
 }
 
@@ -141,9 +141,9 @@ export class TTSBot {
     this.currentPS = null;
 
     // log sciezki i odczyt
-    this.onLog('[config] path: ' + CONFIG_PATH);
+    // this.onLog('[config] path: ' + CONFIG_PATH);
     const saved = loadConfig();
-    this.onLog('[config] loaded@ctor: ' + JSON.stringify(saved));
+    // this.onLog('[config] loaded@ctor: ' + JSON.stringify(saved));
 
     // merge default + plik
     this.opts = {
@@ -161,7 +161,7 @@ export class TTSBot {
       ...saved
     };
 
-    this.onLog('[config] effective@ctor: ' + JSON.stringify(this.opts));
+    // this.onLog('[config] effective@ctor: ' + JSON.stringify(this.opts));
 
     // filter i boty
     this.filter = new Filter({ placeHolder: '*' });
@@ -173,10 +173,10 @@ export class TTSBot {
   async start(channel, options = {}) {
     // ponownie wczytaj z dysku
     const disk = loadConfig();
-    this.onLog('[config] loaded@start: ' + JSON.stringify(disk));
+    // this.onLog('[config] loaded@start: ' + JSON.stringify(disk));
 
     this.opts = { ...this.opts, ...disk, ...options };
-    this.onLog('[config] effective@start: ' + JSON.stringify(this.opts));
+    // this.onLog('[config] effective@start: ' + JSON.stringify(this.opts));
 
     // watcher zmian settings.json
     try { this._cfgWatcher?.close?.(); } catch {}
@@ -185,7 +185,7 @@ export class TTSBot {
         try {
           const fresh = loadConfig();
           this.opts = { ...this.opts, ...fresh };
-          this.onLog('[config] reloaded@watch: ' + JSON.stringify(fresh));
+          // this.onLog('[config] reloaded@watch: ' + JSON.stringify(fresh));
         } catch {}
       });
     } catch {}
