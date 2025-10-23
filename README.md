@@ -24,6 +24,7 @@ Działa w środowisku **Electron**, posiada kolejkę FIFO, możliwość wyciszan
 - Windows 10 / 11  
 - Node.js v18+  
 - Połączenie z Internetem
+- Wolne miejsce na Dysku: 1 GB
 
 ---
 
