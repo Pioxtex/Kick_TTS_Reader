@@ -1,11 +1,30 @@
 const $ = (id) => document.getElementById(id);
 const logBox = $('log');
 
+const updStatus = document.getElementById('updStatus');
+const btnCheck  = document.getElementById('btnUpdCheck');
+const btnGet    = document.getElementById('btnUpdGet');
+
 function log(s) {
   const line = new Date().toLocaleTimeString() + '  ' + s;
   logBox.textContent += line + '\n';
   logBox.scrollTop = logBox.scrollHeight;
 }
+
+async function refreshUpdateInfo() {
+  try {
+    const res = await window.api.checkUpdate();
+    if (!res.ok) { updStatus.textContent = 'Błąd: ' + res.error; btnGet.style.display='none'; return; }
+    updStatus.textContent = `Wersja: ${res.current} | Najnowsza: ${res.latest}` + (res.hasUpdate ? '  — jest dostępna aktualizacja' : '  — aktualne');
+    btnGet.style.display = res.hasUpdate ? 'inline-block' : 'none';
+    btnGet.onclick = () => window.api.openUpdate(res.url);
+  } catch (e) {
+    updStatus.textContent = 'Błąd sprawdzania aktualizacji';
+    btnGet.style.display='none';
+  }
+}
+btnCheck?.addEventListener('click', refreshUpdateInfo);
+document.addEventListener('DOMContentLoaded', refreshUpdateInfo);
 
 async function loadOptionsToUI() {
   const opts = await window.api.getOptions();

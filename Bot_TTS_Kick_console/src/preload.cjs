@@ -2,6 +2,9 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 // API do głównego okna (renderer.html)
 contextBridge.exposeInMainWorld('kicktts', {
+  checkUpdate: () => ipcRenderer.invoke('update:check'),
+  openUpdate:  (url) => ipcRenderer.invoke('update:open', url),
+
   getLastChannel: () => ipcRenderer.invoke('cfg:getLastChannel'),
   setLastChannel: (ch) => ipcRenderer.invoke('cfg:setLastChannel', ch),
 
@@ -17,6 +20,9 @@ contextBridge.exposeInMainWorld('kicktts', {
 
 // API do panelu (panel.html / panel.js)
 contextBridge.exposeInMainWorld('api', {
+  checkUpdate: () => ipcRenderer.invoke('update:check'),
+  openUpdate:  (url) => ipcRenderer.invoke('update:open', url),
+
   getLastChannel: () => ipcRenderer.invoke('cfg:getLastChannel'),
   setLastChannel: (ch) => ipcRenderer.invoke('cfg:setLastChannel', ch),
 

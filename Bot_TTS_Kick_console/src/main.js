@@ -1,5 +1,6 @@
 // src/main.js
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, shell, BrowserWindow, ipcMain } from 'electron';
+import https from 'node:https';
 import path from 'node:path';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -9,12 +10,73 @@ import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const UPDATE_REPO_OWNER   = 'Pioxtex';
+const UPDATE_REPO_NAME    = 'Kick_TTS_Reader';
+const UPDATE_RELEASES_API = `https://api.github.com/repos/${UPDATE_REPO_OWNER}/${UPDATE_REPO_NAME}/releases/latest`;
+const UPDATE_RELEASES_URL = `https://github.com/${UPDATE_REPO_OWNER}/${UPDATE_REPO_NAME}/releases/latest`;
+
 const APP_DIR     = path.join(os.homedir(), 'Documents', 'KickTTSBot');
 const CONFIG_PATH = path.join(APP_DIR, 'settings.json');
 
 let mainWindow = null;
 let panelWindow = null;
 let bot = null;
+
+/** HELPER do porówniania semver */
+function cmpSemver(a, b) {
+  const pa = String(a).replace(/^v/,'').split('.').map(n=>parseInt(n||'0',10));
+  const pb = String(b).replace(/^v/,'').split('.').map(n=>parseInt(n||'0',10));
+  for (let i=0;i<Math.max(pa.length,pb.length);i++){
+    const x = pa[i]||0, y = pb[i]||0;
+    if (x>y) return 1; if (x<y) return -1;
+  }
+  return 0;
+}
+
+/** Pobieranie "latest" */
+function fetchLatestRelease() {
+  return new Promise((resolve,reject)=>{
+    const req = https.request(UPDATE_RELEASES_API, {
+      method: 'GET',
+      headers: { 'User-Agent': 'KickTTSBot-Updater' }
+    }, res => {
+      let data = '';
+      res.on('data', d => data += d);
+      res.on('end', () => {
+        try { resolve(JSON.parse(data)); } catch(e){ reject(e); }
+      });
+    });
+    req.on('error', reject);
+    req.end();
+  });
+}
+
+/** IPC do panelu */
+ipcMain.handle('update:check', async () => {
+  try {
+    const current = app.getVersion();
+    const rel = await fetchLatestRelease();
+    const latest = rel.tag_name || rel.name || '0.0.0';
+    const hasUpdate = cmpSemver(latest, current) > 0;
+    return {
+      ok: true,
+      current, latest, hasUpdate,
+      url: UPDATE_RELEASES_URL,
+      body: rel.body || ''
+    };
+  } catch (e) {
+    return { ok:false, error: e?.message || String(e) };
+  }
+});
+
+ipcMain.handle('update:open', (_e, url) => {
+  try {
+    shell.openExternal(url || UPDATE_RELEASES_URL);
+    return true;
+  } catch {
+    return false;
+  }
+});
 
 /** Odczyt nazwy uzytkownika z settings.json */
 ipcMain.handle('cfg:getLastChannel', () => {
