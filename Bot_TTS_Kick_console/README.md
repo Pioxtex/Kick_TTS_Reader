@@ -11,6 +11,10 @@ Wpisz nazwe kanalu -> **Start**.
 ## Build do jednego .EXE
 ```bash
 npm run build:win
+
+lub
+
+npm run build:portable
 ```
 Artefakty w `dist/` (portable EXE + NSIS).
 
@@ -20,4 +24,3 @@ Domyslnie „Dzwiek systemu" -> dodaj **Desktop Audio**. Dla osobnego suwaka uzy
 ## Uwaga
 Jesli npm narzeka na wersje paczki, zaktualizuj wpis w `package.json` do najnowszej dostepnej: `"@retconned/kick-js": "*"`, a potem `npm install`.
 
-npm run build:portable
