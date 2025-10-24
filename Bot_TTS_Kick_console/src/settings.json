@@ -1,13 +1,18 @@
 {
   "maxLen": 220,
-  "rate": 0.75,
+  "rate": 0.8,
   "volume": 100,
   "chunking": true,
   "maxQueue": 60,
-  "readCommands": false,
+  "readCommands": true,
+  "speakTtsCommands": false,
+  "speakBotCommands": false,
   "profanity": true,
   "skipBots": true,
   "prefix": "{user} ",
-  "voiceName": "",
-  "rememberSettings": true
+  "voiceName": "Microsoft Paulina Desktop - Polish",
+  "rememberSettings": true,
+  "userCooldownMs": 5000,
+  "dedupWindowMs": 30000,
+  "allowedUsers": []
 }

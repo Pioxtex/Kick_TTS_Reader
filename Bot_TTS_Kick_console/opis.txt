@@ -1,0 +1,112 @@
+Co to jest?
+Bot TTS dla czatu Kick:
+łączy się z czatem wskazanego kanału,
+czyta na głos wiadomości (Windows SAPI, wybór głosu systemowego),
+ma kolejkę, priorytety (VIP/mod/sub), anty-spam, cenzurę wulgaryzmów i filtr botów,
+obsługuje komendy moderatorskie typu !tts mute, !tts skip, zmiany tempa/głośności z czatu,
+ma panel ustawień (głosy, parametry mowy, anty-spam, czytanie komend, prefiks).
+Z czego się składa (UI)
+Konsola (renderer.html) – prosty widok start/stop + log wiadomości.
+Panel (panel.html) – pełna konfiguracja bota (głosy, parametry, filtry, anty-spam).
+Plik ustawień: src/settings.json – trwały zapis (auto-tworzenie przy pierwszym starcie).
+Sterowanie (przyciski)
+Kanał – wpisz slug kanału (np. pioxtex).
+Start – łączy bota z czatem i uruchamia TTS.
+Stop – odłącza bota i czyści stan.
+Mute/Unmute – globalne wyciszenie / przywrócenie mowy (działa natychmiast).
+Skip – pomija aktualnie czytany komunikat (przechodzi do następnego).
+Panel – otwiera okno panelu ustawień.
+Logi – co gdzie widać
+[cmd] – wykonanie komend (widać konsola + panel).
+[opts] i [voice] – zmiany opcji/głosu (widać tylko panel).
+Pozostałe logi (połączenie, błędy, kolejka) – konsola + panel.
+Panel – ustawienia i co robią
+Głos
+Wybierz głos – lista głosów z systemu (np. „Microsoft Paulina Desktop – Polish”).
+Odśwież listę – ponownie pobiera dostępne głosy.
+Zmiana głosu działa od następnej wypowiedzi (po Skip – od razu).
+Parametry mowy / kolejka
+Tempo (0.5–2.0) – szybkość czytania (1.0 to normalnie).
+Głośność (0–100) – głośność TTS.
+Maks. długość – ile znaków maksymalnie czytać z wiadomości (dłuższe zostaną ucięte lub podzielone).
+Max kolejka – limit liczby wiadomości w kolejce (nadmiar jest odrzucany).
+Prefiks – szablon przed treścią, zwykle "{user} " lub "{user}: ".
+{user} zostanie zastąpione nickiem, a bot zawsze doda brakującą spację na końcu, żeby nie zlepić prefiksu z tekstem.
+Przełączniki (filtry/tryby)
+Pomijaj boty – nie czytaj wiadomości użytkowników rozpoznanych jako boty (lista wewnętrzna + heurystyki).
+Cenzuruj wulgaryzmy – maskuje przekleństwa (np. „k***”).
+Obsługuj komendy !tts – bot reaguje na !tts … (zmiany ustawień z czatu, komendy modów).
+Czytaj !tts na głos – czytaj treść !tts … jak zwykłą wiadomość (jeśli wyłączysz, !tts służy tylko do sterowania).
+Czytaj komendy botów (!…) – jeśli włączysz, bot będzie czytał na głos linie z komendami (!…) pisane przez boty (domyślnie wyłączone).
+Dziel długie zdania – jeśli treść przekracza limit, bot potnie ją na części.
+Anty-spam
+Cooldown per user (ms) – minimalny odstęp między wiadomościami od jednego użytkownika, które bot przyjmie do czytania.
+Okno dedup (ms) – w tym okienku te same (lub prawie te same) wiadomości odrzucane są jako duplikaty.
+Zmiany w panelu zapisujesz przyciskiem Zapisz ustawienia (od razu wchodzą w życie i lądują w settings.json).
+Jak bot wybiera co czytać
+Komendy !tts … mają pierwszeństwo:
+jeśli to komenda moderatorska (np. !tts mute) – zostanie wykonana (nie czytamy jej na głos);
+jeśli to !tts <treść> – zgodnie z przełącznikami:
+Obsługuj komendy !tts = ON → bot rozumie !tts,
+Czytaj !tts na głos = ON → treść zostanie przeczytana (po filtrach i anty-spamie).
+Inne linie zaczynające się od ! (np. !uptime) – nigdy nie są czytane, żeby nie gadał komend.
+Zwykłe wiadomości – przechodzą przez:
+whitelistę (opcjonalna lista dozwolonych userów),
+filtr botów (jeśli włączony),
+anty-spam (cooldown i dedup),
+cenzurę wulgaryzmów (jeśli włączona),
+transliterację polskich znaków do ASCII (jeśli masz to włączone w swojej wersji),
+limit długości / dzielenie,
+prefiks i kolejkę (VIP/mod/sub może mieć priorytet).
+Komendy moderatorskie (z czatu)
+Działają dla właściciela kanału, moderatorów i osób z allowedUsers.
+Składnia: !tts <subkomenda> [argument]
+!tts mute – wycisza bota (pauza).
+!tts unmute – włącza mówienie.
+!tts toggle – przełącza mute/unmute.
+!tts skip – przerywa aktualnie czytany komunikat i przechodzi dalej.
+!tts clear – czyści kolejkę (także VIP).
+!tts status – wypisuje stan bota: paused/rate/volume/maxQueue/queued/vipQueued/voice/speakTtsCommands/readCommands/prefix.
+!tts rate 1.2 – ustawia tempo (0.5–2.0).
+!tts volume 85 – ustawia głośność (0–100).
+!tts maxqueue 80 – ustawia limit kolejki.
+!tts voice Paulina – wybiera głos zawierający „Paulina” (od następnej wypowiedzi).
+!tts prefix {user}: – ustawia prefiks (może zawierać spacje i {user}).
+!tts <tekst> – czyta tekst na głos, jeśli włączone Obsługuj komendy !tts i Czytaj !tts na głos.
+Zmiany typu rate/volume/voice słychać od następnej kwestii – użyj !tts skip, żeby zadziałały „tu i teraz”.
+Uprawnienia (kto może wydawać komendy)
+Bot sprawdza:
+flagi z payloadu Kick (is_moderator, is_broadcaster, is_owner, itp.),
+zgodność nazwy wiadomości z nazwą kanału (właściciel) – po normalizacji (bez polskich znaków, case-insensitive),
+obecność użytkownika w allowedUsers (w panelu).
+Kolejka i priorytety
+Dwie kolejki: VIP (sub/mod/affiliate) i zwykła. VIP dostaje pierwszeństwo.
+Max kolejka ogranicza sumę (VIP + zwykła) – nadmiarowe wiadomości są ignorowane.
+Skip przerywa aktualny fragment; Clear czyści obie kolejki.
+Filtry/bezpieczeństwo
+Cenzura wulgaryzmów – zamienia słowa zakazane na maski.
+Skip botów – pomija wiadomości użytkowników rozpoznanych jako boty, z wyjątkiem komend modów.
+Dedup – odrzuca powtórzenie tej samej treści w krótkim oknie czasowym.
+Cooldown per user – ogranicza flood jednego autora.
+(Opcjonalnie) transliteracja PL znaków → ASCII (żeby silnik TTS nie kaleczył wymowy).
+Plik ustawień (src/settings.json)
+Najważniejsze klucze:
+rate, volume, maxLen, chunking, maxQueue
+prefix – szablon prefiksu (np. "{user}: ").
+voiceName – nazwa/fragment nazwy głosu.
+readCommands, speakTtsCommands, speakBotCommands
+skipBots, profanity
+userCooldownMs, dedupWindowMs
+allowedUsers – lista nicków z pełnymi uprawnieniami (także komendy modów).
+rememberSettings – czy zapisywać automatycznie zmiany do pliku.
+Plik tworzy się automatycznie przy pierwszym uruchomieniu. Panel zapisuje w nim zmiany po „Zapisz ustawienia”.
+Dobre praktyki (krótkie)
+Po zmianie głosu/tempa/głośności – zrób Skip, żeby usłyszeć efekt od razu.
+Zostaw w prefiksie spację lub dwukropek z odstępem ({user}: ) – bot i tak doda brakującą spację, ale czytelność w logu będzie lepsza.
+Jeśli chcesz, by bot nie czytał !tts (tylko aby reagował na komendy) – wyłącz „Czytaj !tts na głos”.
+Jeśli komuś ufasz – dopisz go do allowedUsers (będzie mógł mute/skip/status przez !tts).
+Najczęstsze problemy i szybkie diagnozy
+„Komendy nie działają” → sprawdź log [cmd] … brak uprawnień | perms=…. Upewnij się, że nick == kanał (po normalizacji) lub dodaj siebie do allowedUsers.
+„Zmieniłem parametry, a nie słychać” → to normalne, Skip wymusza wejście nowych ustawień na bieżącą kwestię.
+„Nie ma mojego głosu na liście” → Odśwież listę w panelu. W Windows wymagane są zainstalowane głosy SAPI.
+„Zlepia prefiks z tekstem” → prefiks ma auto-spację, ale najlepiej ustaw "{user}: ".

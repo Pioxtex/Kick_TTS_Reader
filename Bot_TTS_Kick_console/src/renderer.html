@@ -1,205 +1,188 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pl">
 <head>
-  <meta charset="UTF-8" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="utf-8" />
   <title>Kick TTS Reader by Pioxtex</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src  'self' 'unsafe-inline'">
   <style>
-    body { font-family: Segoe UI, Arial, sans-serif; margin: 16px; }
-    .card { border: 1px solid #ddd; border-radius: 12px; padding: 16px; margin-bottom: 12px; }
-    label { display:block; margin: 6px 0 4px; font-weight: 600; }
-    input[type=text], select, input[type=number], input[type=range] { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #bbb; }
-    .row { display:flex; gap:12px; align-items: center; flex-wrap: wrap; }
-    .row > div { flex:1; min-width: 220px; }
-    button { padding: 10px 16px; border-radius: 10px; border: 0; background: #2b8a3e; color: #fff; font-weight: 700; cursor: pointer; }
-    button.secondary { background: #6c757d; }
-    button.warn { background: #c92a2a; }
-    button.ghost { background: #495057; }
-    button:disabled { opacity: .6; cursor: not-allowed; }
-    .log { height: 320px; overflow:auto; background: #0e0f14; color:#d1d1d1; padding: 10px; border-radius: 8px; font-family: Consolas, monospace; }
-    .muted { color:#999; }
-    .warn { color:#ffbf00; }
-    .error { color:#ff6b6b; }
-    .rangewrap { display:flex; align-items:center; gap:8px; }
-    .rangewrap input[type=number] { max-width: 90px; }
-    .kbd { font-family: Consolas, monospace; background:#222; color:#eee; padding:2px 6px; border-radius:6px; }
+    :root{
+      --kick: #53FC18; 
+      --kick-700:#35c40f;
+      --bg:   #0B0E0B;
+      --bg2:  #0E120F;
+      --panel:#0F1510;
+      --ink:  #E8F0E8;
+      --muted:#9BAA9B;
+      --line: #182018;
+      --glow: 0 0 24px rgba(83,252,24,.25);
+      --shadow: 0 10px 26px rgba(0,0,0,.45);
+      --radius: 14px;
+    }
+    *{ box-sizing: border-box; }
+    html, body{ height:100%; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, Segoe UI, Roboto, Arial;
+      background:
+        radial-gradient(900px 900px at -10% -20%, rgba(83,252,24,.07), transparent 60%),
+        radial-gradient(1200px 900px at 110% 110%, rgba(83,252,24,.05), transparent 60%),
+        linear-gradient(180deg, var(--bg), var(--bg2));
+      color: var(--ink);
+      padding: 20px;
+    }
+    .app{ max-width: 1040px; margin:0 auto; }
+    header{
+      display:flex; align-items:center; justify-content:space-between;
+      margin-bottom: 16px;
+    }
+    .brand{
+      display:flex; align-items:center; gap:12px; font-weight:800; letter-spacing:.2px;
+    }
+    .badge{
+      width:38px; height:38px; border-radius:10px;
+      background: linear-gradient(145deg, var(--kick), #a3ff77);
+      box-shadow: var(--glow), var(--shadow);
+      position: relative;
+    }
+    .badge::after{ content:"K"; position:absolute; inset:0; display:grid; place-items:center;
+      font-weight:1000; color:#0b0f0b; text-shadow: none; }
+    .brand span{ font-size:18px; }
+
+    .state{
+      display:flex; align-items:center; gap:10px;
+      background: #0c110c;
+      border:1px solid var(--line);
+      border-radius: 999px;
+      padding: 8px 12px;
+      color: var(--muted);
+      font-size:13px;
+    }
+    .dot{ width:10px; height:10px; border-radius:50%; background:#6a6; box-shadow: 0 0 10px #6a6; }
+    .dot.ok { background: var(--kick); box-shadow: 0 0 12px var(--kick); }
+    .dot.idle { background:#667; box-shadow: none; }
+
+    .card{
+      background: var(--panel);
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .toolbar{
+      display:grid; grid-template-columns: 120px 1fr auto auto auto auto auto; gap:10px;
+      padding:14px; align-items:center;
+    }
+    label{ color:var(--muted); font-size:13px; }
+    .txt{
+      min-width:220px; padding:11px 12px; border-radius:12px;
+      border:1px solid var(--line); background:#0a100a; color:var(--ink); outline:none;
+    }
+    .btn{
+      padding:10px 14px; border-radius:12px; border:1px solid var(--line);
+      background:#0b120b; color:var(--ink); cursor:pointer; transition:.15s;
+      box-shadow: var(--shadow);
+    }
+    .btn:hover{ border-color:#1f2a1f; transform: translateY(-1px); }
+    .btn:active{ transform: translateY(0); }
+    .btn.primary{
+      background: linear-gradient(145deg, var(--kick), #a3ff77);
+      color:#0b0f0b; border:0; font-weight:700;
+      box-shadow: var(--glow), var(--shadow);
+    }
+    .btn.ghost{ background:#0b120b; }
+    .btn.warn{ background:#14100b; border-color:#2a2418; }
+    .btn.ok{   background:#0f1a10; border-color:#1f3a20; }
+
+    .logWrap{ background:#090D09; border-top:1px solid var(--line); padding:12px; }
+    #log{
+      height: 470px; overflow:auto; white-space: pre-line;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      line-height:1.45; color:#e8ffe8;
+    }
+    .line .ts{ color:#7c8a7c; }
+    .line.ok{ color:#c7ffc7; }
+    .line.warn{ color:#ffe2a0; }
+    .line.err{ color:#ffb0b0; }
+    .line.sys{ color:#b1ffc2; }
+    @media (max-width: 860px){
+      .toolbar{ grid-template-columns: 1fr 1fr; }
+    }
   </style>
 </head>
 <body>
-  <h2>Kick TTS Reader by Pioxtex</h2>
-  <div id="preloadWarn" class="warn" style="display:none;">⚠️ Preload nie dziala - sprawdz w Console czy widac „[preload.cjs] loaded".</div>
-  <div class="card">
-    <label>Nazwa kanalu na Kick (bez https://kick.com/):</label>
-    <input id="channel" type="text" placeholder="np. pioxtex" />
-    <div class="row" style="margin-top:10px;">
-      <div>
-        <label>Limit dlugosci (znaki)</label>
-        <input id="maxlen" type="number" value="220" min="40" max="500">
-      </div>
-      <div>
-        <label>Tempo mowy (0.5 - 2.0)</label>
-        <input id="rate" type="number" value="0.75" min="0.5" max="2" step="0.1">
-      </div>
-      <div>
-        <label>Glosnosc (0-100)</label>
-        <div class="rangewrap">
-          <input id="volume" type="range" min="0" max="100" value="100">
-          <input id="volumeNum" type="number" min="0" max="100" value="100">
-        </div>
-      </div>
-      <div>
-        <label>Czytaj komendy (!...)?</label>
-        <select id="readCommands"><option value="false" selected>Nie</option><option value="true">Tak</option></select>
-      </div>
-      <div>
-        <label>Filtr wulgaryzmow</label>
-        <select id="profanity"><option value="true" selected>Wlaczony</option><option value="false">Wylaczony</option></select>
-      </div>
-      <div>
-        <label>Ignoruj boty (Streamlabs/Nightbot...)</label>
-        <select id="skipBots"><option value="true" selected>Tak</option><option value="false">Nie</option></select>
-      </div>
-      <div>
-        <label>Dzielenie na frazy</label>
-        <select id="chunking"><option value="true">Wlaczone</option><option value="false">Wylaczone</option></select>
-      </div>
-      <div>
-        <label>Max kolejka (1-200)</label>
-        <input id="maxQueue" type="number" value="60" min="1" max="200">
-      </div>
-      <div>
-        <label>Prefix TTS</label>
-        <input id="prefix" type="text" value="{user} ">
-      </div>
-    </div>
-    <div style="margin-top:12px; display:flex; gap:8px; align-items:center;">
-      <button id="startBtn">Start</button>
-      <button id="stopBtn" class="secondary" disabled>Stop</button>
-      <button id="muteBtn" class="ghost" disabled>Mute (M)</button>
-      <button id="skipBtn" class="warn" disabled>Skip (K)</button>
-      <span id="state" class="muted" style="margin-left:10px;">Idle</span>
-    </div>
-    <div class="muted" style="margin-top:6px;">Skroty: <span class="kbd">M</span> - Mute/Unmute, <span class="kbd">K</span> - Skip biezacej.</div>
-  </div>
+  <div class="app">
+    <header>
+      <div class="brand"><div class="badge"></div><span>Kick TTS Reader by Pioxtex</span></div>
+      <div class="state"><span class="dot idle" id="dot"></span><span id="state">Idle</span></div>
+    </header>
 
-  <div class="card">
-    <div class="log" id="log"></div>
+    <div class="card">
+      <div class="toolbar">
+        <label for="channel">Kanał</label>
+        <input class="txt" id="channel" placeholder="np. pioxtex" />
+        <button class="btn primary" id="btnStart">Start</button>
+        <button class="btn ghost"   id="btnStop">Stop</button>
+        <button class="btn ok"      id="btnMute">Mute/Unmute</button>
+        <button class="btn warn"    id="btnSkip">Skip</button>
+        <button class="btn"         id="btnPanel">Panel</button>
+      </div>
+      <div class="logWrap">
+        <div id="log" aria-live="polite"></div>
+      </div>
+    </div>
   </div>
 
   <script>
     const $ = (id) => document.getElementById(id);
-    const logEl = $('log');
+    const logBox = $('log');
     const stateEl = $('state');
-    const startBtn = $('startBtn');
-    const stopBtn = $('stopBtn');
-    const muteBtn = $('muteBtn');
-    const skipBtn = $('skipBtn');
-    const preloadWarn = $('preloadWarn');
-    const vol = $('volume');
-    const volNum = $('volumeNum');
-    let muted = false;
+    const dotEl = $('dot');
 
-    vol.addEventListener('input', () => volNum.value = vol.value);
-    volNum.addEventListener('input', () => { 
-      let v = parseInt(volNum.value || '0', 10);
-      if (isNaN(v)) v = 0; v = Math.max(0, Math.min(100, v));
-      volNum.value = v; vol.value = v;
-    });
-
-    function log(text, cls) {
-      const line = document.createElement('div');
-      if (cls) line.className = cls;
-      line.textContent = text;
-      logEl.appendChild(line);
-      logEl.scrollTop = logEl.scrollHeight;
-      console.log(text);
+    function colorClass(m){
+      const x = (m||'').toLowerCase();
+      if (x.includes('❌') || x.includes('error') || x.includes('blad')) return 'err';
+      if (x.includes('⚠')  || x.includes('warn')  || x.includes('ostrze')) return 'warn';
+      if (x.includes('połączono') || x.includes('dziala') || x.includes('online')) return 'ok';
+      if (x.startsWith('[')) return 'sys';
+      return '';
+    }
+    function setStatus(s){
+      stateEl.textContent = s;
+      dotEl.classList.remove('ok','idle');
+      if ((s||'').toLowerCase().includes('dzial')) dotEl.classList.add('ok'); else dotEl.classList.add('idle');
+    }
+    function escapeHtml(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+    function addLine(message){
+      const ts = new Date().toLocaleTimeString();
+      const cls = colorClass(message);
+      const el = document.createElement('div');
+      el.className = 'line '+cls;
+      el.innerHTML = `<span class="ts">[${ts}]</span> ${escapeHtml(message)}`;
+      logBox.appendChild(el);
+      logBox.scrollTop = logBox.scrollHeight;
     }
 
-    function sanitizeChannel(input) {
-      try {
-        if (input.includes('http')) {
-          const u = new URL(input);
-          const parts = u.pathname.split('/').filter(Boolean);
-          return parts[0] || input;
-        }
-      } catch {}
-      if (input.includes('kick.com/')) {
-        const parts = input.split('kick.com/')[1].split('/').filter(Boolean);
-        return parts[0] || input;
-      }
-      return input.replace(/\s+/g, '').replace(/^@/, '');
-    }
-
-    function setControlsEnabled(en) {
-      muteBtn.disabled = !en;
-      skipBtn.disabled = !en;
-    }
-
-    if (!window.kicktts || !window.kicktts.start) {
-      preloadWarn.style.display = 'block';
-      log('Preload API niedostepne - Start zablokowany.', 'error');
-      startBtn.disabled = true;
-    } else {
-      window.kicktts.onLog((t) => log(t));
-      window.kicktts.onState((s) => { stateEl.textContent = s; });
-      window.kicktts.onMuted((m) => { muted = m; muteBtn.textContent = m ? 'Unmute (M)' : 'Mute (M)'; });
-    }
-
-    startBtn?.addEventListener('click', async () => {
-      try {
-        let channel = $('channel').value.trim();
-        if (!channel) { alert('Podaj nazwe kanalu.'); return; }
-        channel = sanitizeChannel(channel);
-        log('[init] Kanal: ' + channel);
-        startBtn.disabled = true; stopBtn.disabled = false; setControlsEnabled(true);
-        const options = {
-          maxLen: parseInt($('maxlen').value || '220', 10),
-          rate: parseFloat($('rate').value || '0.75'),
-          volume: parseInt(vol.value || '100', 10),
-          chunking: document.getElementById('chunking').value === 'true',
-          maxQueue: parseInt(document.getElementById('maxQueue').value || '60', 10),
-          readCommands: document.getElementById('readCommands').value === 'true',
-          profanity: document.getElementById('profanity').value === 'true',
-          skipBots: document.getElementById('skipBots').value === 'true',
-          prefix: document.getElementById('prefix').value || '{user} '
-        };
-        await window.kicktts.start(channel, options);
-        log('▶️ Start dla kanalu: ' + channel);
-      } catch (e) {
-        log('Blad Start: ' + (e?.message || e), 'error');
-        startBtn.disabled = false; stopBtn.disabled = true; setControlsEnabled(false);
-      }
+    $('btnStart').addEventListener('click', async () => {
+      const ch = $('channel').value.trim();
+      if (!ch) { addLine('⚠️ Podaj nazwę kanału.'); return; }
+      const ok = await window.kicktts.start(ch, {});
+      addLine(ok ? `▶️ Połączono z czatem kanału ${ch}` : '❌ Nie udało się uruchomić bota.');
     });
-
-    stopBtn?.addEventListener('click', async () => {
-      try {
-        await window.kicktts.stop();
-        log('⏹️ Stop');
-      } catch (e) {
-        log('Blad Stop: ' + (e?.message || e), 'error');
-      } finally {
-        startBtn.disabled = false; stopBtn.disabled = true; setControlsEnabled(false);
-      }
+    $('btnStop').addEventListener('click', async () => {
+      await window.kicktts.stop(); addLine('⏹️ Bot zatrzymany.'); setStatus('Idle');
     });
-
-    muteBtn?.addEventListener('click', async () => {
-      const m = await window.kicktts.toggleMute();
-      muted = m; muteBtn.textContent = m ? 'Unmute (M)' : 'Mute (M)';
+    $('btnMute').addEventListener('click', async () => {
+      const muted = await window.kicktts.toggleMute();
+      addLine(muted ? '🔇 Wyciszono.' : '🔊 Dźwięk przywrócony.');
     });
-
-    skipBtn?.addEventListener('click', async () => {
-      await window.kicktts.skip();
+    $('btnSkip').addEventListener('click', async () => {
+      const ok = await window.kicktts.skip();
+      addLine(ok ? '⏭️ Pominięto bieżący komunikat.' : 'Brak aktywnej wiadomości.');
     });
+    $('btnPanel').addEventListener('click', async () => { await window.api.openPanel(); });
 
-    window.addEventListener('keydown', async (e) => {
-      if (e.key === 'm' || e.key === 'M') {
-        const m = await window.kicktts.toggleMute();
-        muted = m; muteBtn.textContent = m ? 'Unmute (M)' : 'Mute (M)';
-      } else if (e.key === 'k' || e.key === 'K') {
-        await window.kicktts.skip();
-      }
-    });
+    window.kicktts.onLog((m) => addLine(m));
+    window.kicktts.onState((s) => setStatus(s));
   </script>
 </body>
 </html>
