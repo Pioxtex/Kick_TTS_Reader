@@ -98,7 +98,8 @@ Bot_TTS_Kick_console/
 │  ├─ panel.js
 │  ├─ ttsBot.js
 │  └─ settings.json
-│
+├─ electron-builder.yml
+├─ start.bat
 ├─ package.json
 └─ README.md
 ```
