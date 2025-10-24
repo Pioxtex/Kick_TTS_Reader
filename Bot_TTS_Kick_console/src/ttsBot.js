@@ -1,7 +1,7 @@
 // TTS Bot – full: settings obok pliku, PL->ASCII, filtry, anty-spam, VIP queue, fallback TTS, komendy !tts, reconnect
+import os from 'node:os';
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import Filter from 'bad-words';
 import { spawn } from 'node:child_process';
 import say from 'say';
@@ -9,10 +9,9 @@ import { createClient } from '@retconned/kick-js';
 
 const isWin = process.platform === 'win32';
 
-// ─────────────── SETTINGS.JSON OBOK TEGO PLIKU ───────────────
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const CONFIG_PATH = path.join(__dirname, 'settings.json');
+// Folder w Dokumentach użytkownika
+const APP_DIR = path.join(os.homedir(), 'Documents', 'KickTTSBot');
+const CONFIG_PATH = path.join(APP_DIR, 'settings.json');
 
 // === GLOBAL DEFAULTS (używane wszędzie) ===
 const defaults = {
@@ -22,39 +21,58 @@ const defaults = {
   chunking: true,
   maxQueue: 60,
   readCommands: true,
-  speakTtsCommands: false,
+  speakTtsCommands: true,
   speakBotCommands: false,
   profanity: true,
   skipBots: true,
-  prefix: '{user} ',
+  prefix: '{user} ',          // celowo ze spacją
   voiceName: '',
   rememberSettings: true,
   userCooldownMs: 5000,
   dedupWindowMs: 30000,
+  lastChannel: "",
   allowedUsers: []
 };
 
+// utwórz folder na ustawienia (jeśli brak)
+function ensureSettingsFolder() {
+  try { fs.mkdirSync(APP_DIR, { recursive: true }); } catch {}
+}
+
+// utwórz plik z domyślnymi, jeśli brak
 function ensureSettingsFile() {
   try {
+    ensureSettingsFolder();
     if (!fs.existsSync(CONFIG_PATH)) {
       fs.writeFileSync(CONFIG_PATH, JSON.stringify(defaults, null, 2), 'utf8');
       console.log('[config] created defaults:', CONFIG_PATH);
     }
   } catch (e) {
-    console.error('[config] create failed:', e.message || e);
+    console.error('[config] create failed:', e?.message || e);
   }
 }
+
+// wczytaj ustawienia z nowej lokalizacji
 function loadConfig() {
-  ensureSettingsFile();
-  try { return JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8')); }
-  catch (e) { console.error('[config] load failed:', e.message || e); return {}; }
-}
-function saveConfig(cfg) {
   try {
-    fs.writeFileSync(CONFIG_PATH, JSON.stringify(cfg, null, 2), 'utf8');
-    console.log('[config] saved:', CONFIG_PATH);
+    ensureSettingsFile();
+    const raw = fs.readFileSync(CONFIG_PATH, 'utf8');
+    return JSON.parse(raw);
   } catch (e) {
-    console.error('[config] save failed:', e.message || e);
+    console.error('[config] load failed, using defaults:', e?.message || e);
+    return { ...defaults };
+  }
+}
+
+// zapisz ustawienia do nowej lokalizacji
+function saveConfig(obj) {
+  try {
+    ensureSettingsFolder();
+    fs.writeFileSync(CONFIG_PATH, JSON.stringify(obj, null, 2), 'utf8');
+    return true;
+  } catch (e) {
+    console.error('[config] save failed:', e?.message || e);
+    return false;
   }
 }
 
@@ -232,6 +250,10 @@ export class TTSBot {
   async start(channel, options = {}) {
     const disk = sanitizeOpts(loadConfig());
     this.opts = sanitizeOpts({ ...this.opts, ...disk, ...options });
+    
+    // zapamiętaj kanał i zapisz go w settings.json
+    this.channel = String(channel || '');
+    try { this.setOption('lastChannel', this.channel); } catch {}
 
     // watcher settings.json
     try { this._cfgWatcher?.close?.(); } catch {}

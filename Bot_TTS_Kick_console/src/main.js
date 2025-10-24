@@ -1,15 +1,47 @@
 // src/main.js
 import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import fs from 'node:fs';
+import os from 'node:os';
 import { TTSBot } from './ttsBot.js';
 
+import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+const APP_DIR     = path.join(os.homedir(), 'Documents', 'KickTTSBot');
+const CONFIG_PATH = path.join(APP_DIR, 'settings.json');
 
 let mainWindow = null;
 let panelWindow = null;
 let bot = null;
+
+/** Odczyt nazwy uzytkownika z settings.json */
+ipcMain.handle('cfg:getLastChannel', () => {
+    try {
+      fs.mkdirSync(APP_DIR, { recursive: true });
+      if (!fs.existsSync(CONFIG_PATH)) return '';
+      const raw = fs.readFileSync(CONFIG_PATH, 'utf8');
+      const cfg = JSON.parse(raw);
+      return cfg.lastChannel || '';
+    } catch {
+    return '';
+  }
+});
+
+/** Zapis nazwy uzytkownika */
+ipcMain.handle('cfg:setLastChannel', (_e, ch) => {
+  try {
+    fs.mkdirSync(APP_DIR, { recursive: true });
+    let cfg = {};
+    try { cfg = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8')); } catch {}
+    cfg.lastChannel = String(ch || '');
+    fs.writeFileSync(CONFIG_PATH, JSON.stringify(cfg, null, 2), 'utf8');
+    return true;
+  } catch {
+    return false;
+  }
+});
 
 /** Bezpieczne IPC – nie wysyłaj do zniszczonych okien */
 function safeSend(win, channel, payload) {

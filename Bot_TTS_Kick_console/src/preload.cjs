@@ -2,6 +2,9 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 // API do głównego okna (renderer.html)
 contextBridge.exposeInMainWorld('kicktts', {
+  getLastChannel: () => ipcRenderer.invoke('cfg:getLastChannel'),
+  setLastChannel: (ch) => ipcRenderer.invoke('cfg:setLastChannel', ch),
+
   start: (channel, options) => ipcRenderer.invoke('bot:start', { channel, options }),
   stop:  () => ipcRenderer.invoke('bot:stop'),
   toggleMute: () => ipcRenderer.invoke('bot:toggleMute'),
@@ -14,6 +17,9 @@ contextBridge.exposeInMainWorld('kicktts', {
 
 // API do panelu (panel.html / panel.js)
 contextBridge.exposeInMainWorld('api', {
+  getLastChannel: () => ipcRenderer.invoke('cfg:getLastChannel'),
+  setLastChannel: (ch) => ipcRenderer.invoke('cfg:setLastChannel', ch),
+
   // eventy panelowe (opcjonalne, żeby pokazywać te same logi co main)
   onLog:   (cb) => ipcRenderer.on('bot:log',   (_e, msg) => cb?.(msg)),
   onState: (cb) => ipcRenderer.on('bot:state', (_e, s)   => cb?.(s)),

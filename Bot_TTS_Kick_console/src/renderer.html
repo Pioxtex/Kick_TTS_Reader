@@ -138,6 +138,13 @@
     const stateEl = $('state');
     const dotEl = $('dot');
 
+    function sanitizeChannel(s) {
+      return String(s || '')
+        .replace(/^https?:\/\/(www\.)?kick\.com\//i, '') // pozwala wkleić cały URL
+        .replace(/[^\w-]/g, '')                           // tylko litery/cyfry/_/-
+        .toLowerCase();
+    }
+
     function colorClass(m){
       const x = (m||'').toLowerCase();
       if (x.includes('❌') || x.includes('error') || x.includes('blad')) return 'err';
@@ -162,9 +169,27 @@
       logBox.scrollTop = logBox.scrollHeight;
     }
 
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const api = window.api;
+        if (!api || !api.getLastChannel) return; // brak preload? nic nie rób
+        const last = await api.getLastChannel();
+        const input = document.getElementById('channel');
+        if (input && typeof last === 'string' && last.trim()) {
+          input.value = last.trim();
+        }
+      } catch (e) {
+        console.log('[lastChannel] read fail:', e);
+      }
+    });
+
     $('btnStart').addEventListener('click', async () => {
-      const ch = $('channel').value.trim();
+      const ch = sanitizeChannel(($('channel').value || '').trim());
       if (!ch) { addLine('⚠️ Podaj nazwę kanału.'); return; }
+
+      // ZAPISZ nazwę kanału
+      try { await window.api.setLastChannel(ch); } catch {}
+
       const ok = await window.kicktts.start(ch, {});
       addLine(ok ? `▶️ Połączono z czatem kanału ${ch}` : '❌ Nie udało się uruchomić bota.');
     });
