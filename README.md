@@ -1,6 +1,6 @@
-# 🎙️ Kick TTS Bot – Czytanie czatu na głos (by Pioxtex)
+# 🎙️ Kick TTS Reader (by Pioxtex) – Czytanie czatu na głos 
 
-**Kick TTS Bot** to aplikacja dla streamerów Kick.com, która automatycznie **czyta wiadomości z czatu na głos**.  
+**Kick TTS Reader** to aplikacja dla streamerów Kick.com, która automatycznie **czyta wiadomości z czatu na głos**.  
 Zbudowana w **Node.js + Electron**, umożliwia pełną kontrolę z poziomu interfejsu oraz czatu (`!tts`).
 
 ---
