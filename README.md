@@ -37,7 +37,7 @@ Zbudowana w **Node.js + Electron**, umożliwia pełną kontrolę z poziomu inter
    npm start
    ```
 
-> Jeśli używasz po raz pierwszy – w folderze `src/` utworzy się `settings.json` z domyślnymi wartościami.
+> Jeśli używasz po raz pierwszy – w folderze `documents` utworzy się `settings.json` z domyślnymi wartościami.
 
 ---
 
