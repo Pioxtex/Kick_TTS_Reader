@@ -13,7 +13,7 @@ Zbudowana w **Node.js + Electron**, umożliwia pełną kontrolę z poziomu inter
 - ⚙️ Panel konfiguracyjny z wszystkimi ustawieniami (tempo, głośność, limity, filtry)  
 - 🔞 Cenzura wulgaryzmów i automatyczne pomijanie botów  
 - 🧠 Antyspam: limit kolejki, cooldown per user, deduplikacja wiadomości  
-- 💾 Trwały zapis konfiguracji (`src/settings.json`)  
+- 💾 Trwały zapis konfiguracji (`documents/KickTTSBot/settings.json`)  
 - 🪄 Prefiks `{user}` – automatyczne wstawianie nicku mówiącego (np. „Pioxtex: ...”)  
 - ⚡ Kolejka TTS z priorytetami (VIP/mod/sub > zwykli)  
 - 🎛️ Sterowanie z czatu i panelu (pełna dwustronna synchronizacja)
