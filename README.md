@@ -41,7 +41,7 @@ Zbudowana w **Node.js + Electron**, umożliwia pełną kontrolę z poziomu inter
 
 ---
 
-## ⚙️ Plik konfiguracyjny (`documents/settings.json`)
+## ⚙️ Plik konfiguracyjny (`documents/KickTTSBot/settings.json`)
 
 Zawiera trwałe ustawienia bota. Przykład:
 
