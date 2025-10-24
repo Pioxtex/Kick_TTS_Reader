@@ -59,7 +59,8 @@ Zawiera trwałe ustawienia bota. Przykład:
   "speakBotCommands": false,
   "userCooldownMs": 5000,
   "dedupWindowMs": 30000,
-  "allowedUsers": ["pioxtex"]
+  "allowedUsers": [],
+  "lastChannel": "",
 }
 ```
 
