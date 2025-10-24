@@ -25,8 +25,8 @@ Zbudowana w **Node.js + Electron**, umożliwia pełną kontrolę z poziomu inter
 1. Zainstaluj **Node.js 18+** i **npm**
 2. Sklonuj repo:
    ```bash
-   git clone https://github.com/TwojeRepo/Kick-TTS-Bot.git
-   cd Kick-TTS-Bot
+   git clone https://github.com/TwojeRepo/Kick_TTS_Bot.git
+   cd Bot_TTS_Kick_console
    ```
 3. Zainstaluj zależności:
    ```bash
@@ -87,7 +87,7 @@ Zawiera trwałe ustawienia bota. Przykład:
 ## 🧭 Struktura projektu
 
 ```
-Kick-TTS-Bot/
+Bot_TTS_Kick_console/
 │
 ├─ src/
 │  ├─ main.js
