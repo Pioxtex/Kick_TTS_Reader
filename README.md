@@ -60,7 +60,7 @@ Zawiera trwałe ustawienia bota. Przykład:
   "userCooldownMs": 5000,
   "dedupWindowMs": 30000,
   "allowedUsers": [],
-  "lastChannel": "",
+  "lastChannel": ""
 }
 ```
 
