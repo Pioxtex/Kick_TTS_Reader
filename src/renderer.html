@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <title>Kick TTS Reader by Pioxtex</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src  'self' 'unsafe-inline'">
+  <style>
+    :root{
+      --kick: #53FC18; 
+      --kick-700:#35c40f;
+      --bg:   #0B0E0B;
+      --bg2:  #0E120F;
+      --panel:#0F1510;
+      --ink:  #E8F0E8;
+      --muted:#9BAA9B;
+      --line: #182018;
+      --glow: 0 0 24px rgba(83,252,24,.25);
+      --shadow: 0 10px 26px rgba(0,0,0,.45);
+      --radius: 14px;
+    }
+    *{ box-sizing: border-box; }
+    html, body{ height:100%; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, Segoe UI, Roboto, Arial;
+      background:
+        radial-gradient(900px 900px at -10% -20%, rgba(83,252,24,.07), transparent 60%),
+        radial-gradient(1200px 900px at 110% 110%, rgba(83,252,24,.05), transparent 60%),
+        linear-gradient(180deg, var(--bg), var(--bg2));
+      color: var(--ink);
+      padding: 20px;
+    }
+    .app{ max-width: 1040px; margin:0 auto; }
+    header{
+      display:flex; align-items:center; justify-content:space-between;
+      margin-bottom: 16px;
+    }
+    .brand{
+      display:flex; align-items:center; gap:12px; font-weight:800; letter-spacing:.2px;
+    }
+    .badge{
+      width:38px; height:38px; border-radius:10px;
+      background: linear-gradient(145deg, var(--kick), #a3ff77);
+      box-shadow: var(--glow), var(--shadow);
+      position: relative;
+    }
+    .badge::after{ content:"K"; position:absolute; inset:0; display:grid; place-items:center;
+      font-weight:1000; color:#0b0f0b; text-shadow: none; }
+    .brand span{ font-size:18px; }
+
+    .state{
+      display:flex; align-items:center; gap:10px;
+      background: #0c110c;
+      border:1px solid var(--line);
+      border-radius: 999px;
+      padding: 8px 12px;
+      color: var(--muted);
+      font-size:13px;
+    }
+    .dot{ width:10px; height:10px; border-radius:50%; background:#6a6; box-shadow: 0 0 10px #6a6; }
+    .dot.ok { background: var(--kick); box-shadow: 0 0 12px var(--kick); }
+    .dot.idle { background:#667; box-shadow: none; }
+
+    .card{
+      background: var(--panel);
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .toolbar{
+      display:grid; grid-template-columns: 120px 1fr auto auto auto auto auto; gap:10px;
+      padding:14px; align-items:center;
+    }
+    label{ color:var(--muted); font-size:13px; }
+    .txt{
+      min-width:220px; padding:11px 12px; border-radius:12px;
+      border:1px solid var(--line); background:#0a100a; color:var(--ink); outline:none;
+    }
+    .btn{
+      padding:10px 14px; border-radius:12px; border:1px solid var(--line);
+      background:#0b120b; color:var(--ink); cursor:pointer; transition:.15s;
+      box-shadow: var(--shadow);
+    }
+    .btn:hover{ border-color:#1f2a1f; transform: translateY(-1px); }
+    .btn:active{ transform: translateY(0); }
+    .btn.primary{
+      background: linear-gradient(145deg, var(--kick), #a3ff77);
+      color:#0b0f0b; border:0; font-weight:700;
+      box-shadow: var(--glow), var(--shadow);
+    }
+    .btn.ghost{ background:#0b120b; }
+    .btn.warn{ background:#14100b; border-color:#2a2418; }
+    .btn.ok{   background:#0f1a10; border-color:#1f3a20; }
+
+    .logWrap{ background:#090D09; border-top:1px solid var(--line); padding:12px; }
+    #log{
+      height: 470px; overflow:auto; white-space: pre-line;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      line-height:1.45; color:#e8ffe8;
+    }
+    .line .ts{ color:#7c8a7c; }
+    .line.ok{ color:#c7ffc7; }
+    .line.warn{ color:#ffe2a0; }
+    .line.err{ color:#ffb0b0; }
+    .line.sys{ color:#b1ffc2; }
+    @media (max-width: 860px){
+      .toolbar{ grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="brand"><div class="badge"></div><span>Kick TTS Reader by Pioxtex</span></div>
+      <div class="state"><span class="dot idle" id="dot"></span><span id="state">Idle</span></div>
+    </header>
+
+    <div class="card">
+      <div class="toolbar">
+        <label for="channel">Kanał</label>
+        <input class="txt" id="channel" placeholder="np. pioxtex" />
+        <button class="btn primary" id="btnStart">Start</button>
+        <button class="btn ghost"   id="btnStop">Stop</button>
+        <button class="btn ok"      id="btnMute">Mute/Unmute</button>
+        <button class="btn warn"    id="btnSkip">Skip</button>
+        <button class="btn"         id="btnPanel">Panel</button>
+      </div>
+      <div class="logWrap">
+        <div id="log" aria-live="polite"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const logBox = $('log');
+    const stateEl = $('state');
+    const dotEl = $('dot');
+
+    function colorClass(m){
+      const x = (m||'').toLowerCase();
+      if (x.includes('❌') || x.includes('error') || x.includes('blad')) return 'err';
+      if (x.includes('⚠')  || x.includes('warn')  || x.includes('ostrze')) return 'warn';
+      if (x.includes('połączono') || x.includes('dziala') || x.includes('online')) return 'ok';
+      if (x.startsWith('[')) return 'sys';
+      return '';
+    }
+    function setStatus(s){
+      stateEl.textContent = s;
+      dotEl.classList.remove('ok','idle');
+      if ((s||'').toLowerCase().includes('dzial')) dotEl.classList.add('ok'); else dotEl.classList.add('idle');
+    }
+    function escapeHtml(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+    function addLine(message){
+      const ts = new Date().toLocaleTimeString();
+      const cls = colorClass(message);
+      const el = document.createElement('div');
+      el.className = 'line '+cls;
+      el.innerHTML = `<span class="ts">[${ts}]</span> ${escapeHtml(message)}`;
+      logBox.appendChild(el);
+      logBox.scrollTop = logBox.scrollHeight;
+    }
+
+    $('btnStart').addEventListener('click', async () => {
+      const ch = $('channel').value.trim();
+      if (!ch) { addLine('⚠️ Podaj nazwę kanału.'); return; }
+      const ok = await window.kicktts.start(ch, {});
+      addLine(ok ? `▶️ Połączono z czatem kanału ${ch}` : '❌ Nie udało się uruchomić bota.');
+    });
+    $('btnStop').addEventListener('click', async () => {
+      await window.kicktts.stop(); addLine('⏹️ Bot zatrzymany.'); setStatus('Idle');
+    });
+    $('btnMute').addEventListener('click', async () => {
+      const muted = await window.kicktts.toggleMute();
+      addLine(muted ? '🔇 Wyciszono.' : '🔊 Dźwięk przywrócony.');
+    });
+    $('btnSkip').addEventListener('click', async () => {
+      const ok = await window.kicktts.skip();
+      addLine(ok ? '⏭️ Pominięto bieżący komunikat.' : 'Brak aktywnej wiadomości.');
+    });
+    $('btnPanel').addEventListener('click', async () => { await window.api.openPanel(); });
+
+    window.kicktts.onLog((m) => addLine(m));
+    window.kicktts.onState((s) => setStatus(s));
+  </script>
+</body>
+</html>
