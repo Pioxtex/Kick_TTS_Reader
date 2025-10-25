@@ -1,0 +1,112 @@
+🎙️ Kick TTS Bot
+
+🔍 Co to jest?
+    Bot TTS dla czatu Kick.com – automatycznie czyta wiadomości z czatu na głos, korzystając z silnika Windows SAPI.
+    Obsługuje priorytety użytkowników, filtry, komendy moderatorskie oraz panel ustawień.
+
+Funkcje:
+🔗 Łączy się z czatem wskazanego kanału.
+🔊 Czyta wiadomości głosem systemowym.
+🧮 Kolejkuje wiadomości z priorytetami (VIP/mod/sub).
+🚫 Ma wbudowany anty-spam, filtr botów i cenzurę wulgaryzmów.
+⚙️ Pozwala sterować parametrami mowy i ustawieniami z czatu (!tts ...).
+🪟 Posiada panel konfiguracyjny i zapis ustawień do pliku settings.json.
+
+🖥️ Interfejs
+1. Konsola (renderer.html)
+    Służy do uruchamiania / zatrzymywania bota.
+    Wyświetla logi (połączenie, wiadomości, błędy).
+
+2. Panel (panel.html)
+    Zawiera wszystkie ustawienia głosu, parametrów i filtrów.
+    Zmiany można zapisać przyciskiem „Zapisz ustawienia”.
+
+3. Plik ustawień (src/settings.json)
+    Tworzy się automatycznie przy pierwszym starcie.
+    Zawiera wszystkie parametry konfiguracyjne (rate, volume, prefix, filtry, itd.).
+
+🧭 Sterowanie (Konsola)
+    Przycisk	                Działanie
+    Kanał	                    Wprowadź nazwę kanału (np. pioxtex).
+    Start	                    Uruchamia bota i łączy z czatem.
+    Stop	                    Zatrzymuje bota i czyści stan.
+    Mute / Unmute	            Globalne wyciszenie / przywrócenie mowy.
+    Skip	                    Pomija aktualnie czytany komunikat.
+    Panel	                    Otwiera panel konfiguracyjny.
+
+🪄 Panel – Ustawienia
+🎤 Głos:
+    Wybierz głos – lista głosów z systemu Windows.
+    Odśwież listę – ponownie pobiera dostępne głosy.
+    Zmiana działa od następnej wypowiedzi (lub natychmiast po Skip).
+
+⚙️ Parametry mowy i kolejki:
+    Tempo (0.5–2.0)     – szybkość czytania.
+    Głośność (0–100)    – poziom TTS.
+    Maks. długość       – limit znaków wiadomości.
+    Max kolejka         – maks. liczba wiadomości w kolejce.
+    Prefiks             – np. {user}: (bot sam doda brakującą spację).
+
+🔧 Filtry i tryby:
+    ✅ Pomijaj boty
+    ✅ Cenzuruj wulgaryzmy
+    ✅ Obsługuj komendy !tts
+    ✅ Czytaj !tts na głos
+    ✅ Czytaj komendy botów (!...)
+    ✅ Dziel długie wiadomości
+
+🧠 Anty-spam:
+    Cooldown per user (ms) – minimalny odstęp między wiadomościami tego samego użytkownika.
+    Okno dedup (ms) – czas, w którym duplikaty są ignorowane.
+
+💬 Komendy moderatorskie
+Dostępne dla właściciela kanału, moderatorów oraz użytkowników z listy allowedUsers.
+
+    Komenda                      Działanie
+    !tts mute	                 Wycisza bota.
+    !tts unmute	                 Przywraca mowę.
+    !tts toggle	                 Przełącza mute/unmute.
+    !tts skip	                 Pomija bieżącą wiadomość.
+    !tts clear	                 Czyści kolejkę.
+    !tts status	                 Pokazuje aktualny stan bota.
+    !tts rate 1.2	             Zmienia tempo mowy.
+    !tts volume 85	             Zmienia głośność.
+    !tts maxqueue 80	         Zmienia maks. długość kolejki.
+    !tts voice Paulina	         Ustawia głos.
+    !tts prefix {user}:	         Zmienia prefiks.
+    !tts <tekst>	             Czyta tekst (jeśli funkcja włączona).
+
+🧩 Kolejka i priorytety
+    🟢 VIP (mod/sub/affiliate) – priorytetowa kolejka.
+    ⚪ Zwykła – druga w kolejności.
+    Limit maxQueue obejmuje sumę obu.
+    Skip przerywa aktualną kwestię, Clear czyści wszystko.
+
+🛡️ Filtry i bezpieczeństwo
+    🔒 Cenzura wulgaryzmów – zamienia zakazane słowa na maski (np. k***).
+    🤖 Pomijanie botów – ignoruje wiadomości z automatycznych kont.
+    🔁 Dedup – odrzuca powtórzenia.
+    🕒 Cooldown – ogranicza flood.
+    🔤 (Opcjonalnie) transliteracja polskich znaków → ASCII.
+
+📁 Plik settings.json – Kluczowe pola
+    Klucz	                                                    Opis
+    rate, volume, maxLen, maxQueue	                            Podstawowe parametry mowy i kolejki.
+    voiceName	                                                Nazwa głosu (np. “Paulina”).
+    prefix	                                                    Szablon prefiksu ({user}: ).
+    skipBots, profanity, readCommands, speakTtsCommands	        Ustawienia filtrów.
+    userCooldownMs, dedupWindowMs	                            Parametry anty-spamu.
+    allowedUsers	                                            Lista użytkowników z pełnymi uprawnieniami.
+    rememberSettings	                                        Automatyczny zapis ustawień.
+
+🧩 Dobre praktyki
+    Po zmianie głosu/tempa/głośności – użyj !tts skip.
+    Zawsze zostaw odstęp po {user}: , żeby prefiks był czytelny.
+    Wyłącz „Czytaj !tts na głos”, jeśli bot ma tylko reagować, a nie mówić.
+    Dodaj zaufanych użytkowników do allowedUsers.
+
+🚨 Najczęstsze problemy
+    ❗ Komendy nie działają: sprawdź log [cmd] i uprawnienia.
+    ❗ Brak efektu po zmianie ustawień: użyj Skip.
+    ❗ Nie widać głosu: odśwież listę w panelu (potrzebne głosy SAPI).
+    ❗ Zlepiony prefiks: upewnij się, że kończy się spacją lub dwukropkiem.
