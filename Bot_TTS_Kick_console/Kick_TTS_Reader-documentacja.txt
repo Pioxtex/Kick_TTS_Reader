@@ -26,7 +26,7 @@ Funkcje:
     Zawiera wszystkie parametry konfiguracyjne (rate, volume, prefix, filtry, itd.).
 
 🧭 Sterowanie (Konsola)
-    Przycisk	                Działanie
+    Przycisk:	                Działanie:
     Kanał	                    Wprowadź nazwę kanału (np. pioxtex).
     Start	                    Uruchamia bota i łączy z czatem.
     Stop	                    Zatrzymuje bota i czyści stan.
@@ -62,7 +62,7 @@ Funkcje:
 💬 Komendy moderatorskie
 Dostępne dla właściciela kanału, moderatorów oraz użytkowników z listy allowedUsers.
 
-    Komenda                      Działanie
+    Komenda:                     Działanie:
     !tts mute	                 Wycisza bota.
     !tts unmute	                 Przywraca mowę.
     !tts toggle	                 Przełącza mute/unmute.
@@ -90,7 +90,7 @@ Dostępne dla właściciela kanału, moderatorów oraz użytkowników z listy al
     🔤 (Opcjonalnie) transliteracja polskich znaków → ASCII.
 
 📁 Plik settings.json – Kluczowe pola
-    Klucz	                                                    Opis
+    Klucz:	                                                    Opis:
     rate, volume, maxLen, maxQueue	                            Podstawowe parametry mowy i kolejki.
     voiceName	                                                Nazwa głosu (np. “Paulina”).
     prefix	                                                    Szablon prefiksu ({user}: ).
@@ -109,4 +109,5 @@ Dostępne dla właściciela kanału, moderatorów oraz użytkowników z listy al
     ❗ Komendy nie działają: sprawdź log [cmd] i uprawnienia.
     ❗ Brak efektu po zmianie ustawień: użyj Skip.
     ❗ Nie widać głosu: odśwież listę w panelu (potrzebne głosy SAPI).
+
     ❗ Zlepiony prefiks: upewnij się, że kończy się spacją lub dwukropkiem.
