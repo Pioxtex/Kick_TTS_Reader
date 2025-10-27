@@ -131,83 +131,88 @@
       </div>
     </div>
   </div>
+<!-- renderer.html — JS: lekkie porządki w <script>, bez ingerencji w UI -->
+<script>
+  const $ = (id) => document.getElementById(id);
+  const logBox = $('log');
+  const stateEl = $('state');
+  const dotEl = $('dot');
 
-  <script>
-    const $ = (id) => document.getElementById(id);
-    const logBox = $('log');
-    const stateEl = $('state');
-    const dotEl = $('dot');
+  const sanitizeChannel = (s) => String(s||'')
+    .replace(/^https?:\/\/(www\.)?kick\.com\//i,'')
+    .replace(/[^\w-]/g,'')
+    .toLowerCase();
 
-    function sanitizeChannel(s) {
-      return String(s || '')
-        .replace(/^https?:\/\/(www\.)?kick\.com\//i, '') // pozwala wkleić cały URL
-        .replace(/[^\w-]/g, '')                           // tylko litery/cyfry/_/-
-        .toLowerCase();
-    }
+  const colorClass = (m) => {
+    const x = (m||'').toLowerCase();
+    if (x.includes('❌') || x.includes('error') || x.includes('blad')) return 'err';
+    if (x.includes('⚠')  || x.includes('warn')  || x.includes('ostrze')) return 'warn';
+    if (x.includes('połączono') || x.includes('dziala') || x.includes('online')) return 'ok';
+    if (x.startsWith('[')) return 'sys';
+    return '';
+  };
 
-    function colorClass(m){
-      const x = (m||'').toLowerCase();
-      if (x.includes('❌') || x.includes('error') || x.includes('blad')) return 'err';
-      if (x.includes('⚠')  || x.includes('warn')  || x.includes('ostrze')) return 'warn';
-      if (x.includes('połączono') || x.includes('dziala') || x.includes('online')) return 'ok';
-      if (x.startsWith('[')) return 'sys';
-      return '';
-    }
-    function setStatus(s){
-      stateEl.textContent = s;
-      dotEl.classList.remove('ok','idle');
-      if ((s||'').toLowerCase().includes('dzial')) dotEl.classList.add('ok'); else dotEl.classList.add('idle');
-    }
-    function escapeHtml(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
-    function addLine(message){
-      const ts = new Date().toLocaleTimeString();
-      const cls = colorClass(message);
-      const el = document.createElement('div');
-      el.className = 'line '+cls;
-      el.innerHTML = `<span class="ts">[${ts}]</span> ${escapeHtml(message)}`;
-      logBox.appendChild(el);
-      logBox.scrollTop = logBox.scrollHeight;
-    }
+  const setStatus = (s) => {
+    stateEl.textContent = s;
+    dotEl.classList.remove('ok','idle');
+    dotEl.classList.add((s||'').toLowerCase().includes('dzial') ? 'ok' : 'idle');
+  };
 
-    document.addEventListener('DOMContentLoaded', async () => {
-      try {
-        const api = window.api;
-        if (!api || !api.getLastChannel) return; // brak preload? nic nie rób
+  const escapeHtml = (s) => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const addLine = (message) => {
+    const ts  = new Date().toLocaleTimeString();
+    const cls = colorClass(message);
+    const el  = document.createElement('div');
+    el.className = 'line '+cls;
+    el.innerHTML = `<span class="ts">[${ts}]</span> ${escapeHtml(message)}`;
+    logBox.appendChild(el);
+    logBox.scrollTop = logBox.scrollHeight;
+  };
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    // wczytaj ostatni kanał — bez zmian
+    try {
+      const api = window.api;
+      if (api?.getLastChannel) {
         const last = await api.getLastChannel();
-        const input = document.getElementById('channel');
-        if (input && typeof last === 'string' && last.trim()) {
-          input.value = last.trim();
-        }
-      } catch (e) {
-        console.log('[lastChannel] read fail:', e);
+        const input = $('channel');
+        if (input && typeof last === 'string' && last.trim()) input.value = last.trim();
       }
-    });
+    } catch (e) { console.log('[lastChannel] read fail:', e); }
 
-    $('btnStart').addEventListener('click', async () => {
-      const ch = sanitizeChannel(($('channel').value || '').trim());
+    // podpinanie eventów — null-safe
+    $('btnStart')?.addEventListener('click', async () => {
+      const ch = sanitizeChannel(($('channel')?.value || '').trim());
       if (!ch) { addLine('⚠️ Podaj nazwę kanału.'); return; }
-
-      // ZAPISZ nazwę kanału
-      try { await window.api.setLastChannel(ch); } catch {}
-
-      const ok = await window.kicktts.start(ch, {});
+      try { await window.api?.setLastChannel?.(ch); } catch {}
+      const ok = await window.kicktts?.start?.(ch, {});
       addLine(ok ? `▶️ Połączono z czatem kanału ${ch}` : '❌ Nie udało się uruchomić bota.');
     });
-    $('btnStop').addEventListener('click', async () => {
-      await window.kicktts.stop(); addLine('⏹️ Bot zatrzymany.'); setStatus('Idle');
+
+    $('btnStop')?.addEventListener('click', async () => {
+      await window.kicktts?.stop?.();
+      addLine('⏹️ Bot zatrzymany.');
+      setStatus('Idle');
     });
-    $('btnMute').addEventListener('click', async () => {
-      const muted = await window.kicktts.toggleMute();
+
+    $('btnMute')?.addEventListener('click', async () => {
+      const muted = await window.kicktts?.toggleMute?.();
       addLine(muted ? '🔇 Wyciszono.' : '🔊 Dźwięk przywrócony.');
     });
-    $('btnSkip').addEventListener('click', async () => {
-      const ok = await window.kicktts.skip();
+
+    $('btnSkip')?.addEventListener('click', async () => {
+      const ok = await window.kicktts?.skip?.();
       addLine(ok ? '⏭️ Pominięto bieżący komunikat.' : 'Brak aktywnej wiadomości.');
     });
-    $('btnPanel').addEventListener('click', async () => { await window.api.openPanel(); });
 
-    window.kicktts.onLog((m) => addLine(m));
-    window.kicktts.onState((s) => setStatus(s));
-  </script>
+    $('btnPanel')?.addEventListener('click', async () => {
+      await window.api?.openPanel?.();
+    });
+
+    // bridge
+    window.kicktts?.onLog?.((m) => addLine(m));
+    window.kicktts?.onState?.((s) => setStatus(s));
+  });
+</script>
 </body>
 </html>
